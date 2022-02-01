@@ -13,9 +13,17 @@ class EmptyScreen extends StatefulWidget {
 }
 
 class _EmptyScreenState extends State<EmptyScreen> {
-  late List<PlutoColumn> columns;
+  late List<PlutoColumn> gridAColumns;
 
-  late List<PlutoRow> rows;
+  late List<PlutoRow> gridARows;
+
+  late List<PlutoColumn> gridBColumns;
+
+  late List<PlutoRow> gridBRows;
+
+  late List<PlutoColumn> gridCColumns;
+
+  late List<PlutoRow> gridCRows;
 
   late PlutoGridStateManager stateManager;
 
@@ -23,17 +31,27 @@ class _EmptyScreenState extends State<EmptyScreen> {
   void initState() {
     super.initState();
 
-    columns = [
+    gridAColumns = [
       PlutoColumn(
         title: 'column1',
         field: 'column1',
-        type: PlutoColumnType.text(),
+        type: PlutoColumnType.date(),
       ),
+    ];
+
+    gridARows = DummyData.rowsByColumns(length: 10, columns: gridAColumns);
+
+    gridBColumns = [
       PlutoColumn(
         title: 'column2',
         field: 'column2',
-        type: PlutoColumnType.text(),
+        type: PlutoColumnType.time(),
       ),
+    ];
+
+    gridBRows = DummyData.rowsByColumns(length: 10, columns: gridBColumns);
+
+    gridCColumns = [
       PlutoColumn(
         title: 'column3',
         field: 'column3',
@@ -41,7 +59,7 @@ class _EmptyScreenState extends State<EmptyScreen> {
       ),
     ];
 
-    rows = DummyData.rowsByColumns(length: 10, columns: columns);
+    gridCRows = DummyData.rowsByColumns(length: 10, columns: gridCColumns);
   }
 
   @override
@@ -49,16 +67,20 @@ class _EmptyScreenState extends State<EmptyScreen> {
     return Scaffold(
       body: Container(
         padding: const EdgeInsets.all(15),
-        child: PlutoGrid(
-          columns: columns,
-          rows: rows,
-          onChanged: (PlutoGridOnChangedEvent event) {
-            print(event);
-          },
-          onLoaded: (PlutoGridOnLoadedEvent event) {
-            stateManager = event.stateManager;
-          },
-          configuration: const PlutoGridConfiguration(),
+        child: PlutoTripleGrid(
+          gridPropsA: PlutoTripleGridProps(
+            columns: gridAColumns,
+            rows: gridARows,
+          ),
+          gridPropsB: PlutoTripleGridProps(
+            columns: gridBColumns,
+            rows: gridBRows,
+          ),
+          gridPropsC: PlutoTripleGridProps(
+            columns: gridCColumns,
+            rows: gridCRows,
+          ),
+          display: const PlutoTripleGridDisplayRatio(ratio: 0.333),
         ),
       ),
     );
