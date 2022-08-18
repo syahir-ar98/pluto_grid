@@ -91,7 +91,7 @@ Future<T?>? showColumnMenu<T>({
     color: backgroundColor,
     position: RelativeRect.fromLTRB(
       offset.dx == 0 ? position.dx : position.dx - offset.dx,
-      offset.dy == 0 ? position.dy : position.dy - offfset.dy,
+      offset.dy == 0 ? position.dy : position.dy - offset.dy,
       position.dx + overlay.size.width,
       position.dy + overlay.size.height,
     ),
