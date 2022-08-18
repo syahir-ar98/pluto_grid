@@ -83,13 +83,15 @@ Future<T?>? showColumnMenu<T>({
 }) {
   final RenderBox overlay =
       Overlay.of(context)!.context.findRenderObject() as RenderBox;
+  
+  final Offset offset = overlay.localToGlobal(Offset.zero);
 
   return showMenu<T>(
     context: context,
     color: backgroundColor,
     position: RelativeRect.fromLTRB(
-      position.dx,
-      position.dy,
+      offset.dx == 0 ? position.dx : position.dx - offset.dx,
+      offset.dy == 0 ? position.dy : position.dy - offfset.dy,
       position.dx + overlay.size.width,
       position.dy + overlay.size.height,
     ),
