@@ -153,13 +153,21 @@ class PlutoPaginationState extends _PlutoPaginationStateWithChange {
       ),
       foregroundColor: isCurrentIndex
           ? stateManager.configuration!.style.iconColor
-          : Colors.white,
+          : Colors.transparent,
       disabledForegroundColor: Colors.transparent.withOpacity(0.38),
       shadowColor: Colors.transparent,
       // padding: const EdgeInsets.fromLTRB(5, 0, 0, 10),
       backgroundColor: isCurrentIndex
           ? stateManager.configuration!.style.iconColor
           : Colors.transparent,
+      // backgroundColor:
+      //     MaterialStateProperty.resolveWith<Color>((Set<MaterialState> states) {
+      //   if (states.contains(MaterialState.hovered)) {
+      //     return Colors.red;
+      //   } else {
+      //     return Colors.white;
+      //   }
+      // }),
     );
   }
 
