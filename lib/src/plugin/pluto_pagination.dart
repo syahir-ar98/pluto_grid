@@ -70,33 +70,37 @@ class PlutoPaginationState extends _PlutoPaginationStateWithChange {
     return countItemSize < 0 ? 0 : min(countItemSize, 3);
   }
 
+  // int get _startPage {
+  //   final itemSizeGap = _itemSize + 1;
+
+  //   var start = page - itemSizeGap;
+
+  //   if (page + _itemSize > totalPage) {
+  //     start -= _itemSize + page - totalPage;
+  //   }
+
+  //   return start < 0 ? 0 : start;
+  // }
   int get _startPage {
-    final itemSizeGap = _itemSize + 1;
-
-    var start = page - itemSizeGap;
-
-    if (page + _itemSize > totalPage) {
-      start -= _itemSize + page - totalPage;
-    }
-
-    return start < 0 ? 0 : start;
+    return 0;
   }
 
+  // int get _endPage {
+  //   final itemSizeGap = _itemSize + 1;
+
+  //   var end = page + _itemSize;
+
+  //   if (page - itemSizeGap < 0) {
+  //     end += itemSizeGap - page;
+  //   }
+
+  //   return end > totalPage ? totalPage : end;
+  // }
   int get _endPage {
-    final itemSizeGap = _itemSize + 1;
-
-    var end = page + _itemSize;
-
-    if (page - itemSizeGap < 0) {
-      end += itemSizeGap - page;
-    }
-
-    return end > totalPage ? totalPage : end;
+    return totalPage;
   }
 
   List<int> get _pageNumbers {
-    print("_endPage: $_endPage");
-    print("_startPage: $_startPage");
     return List.generate(
       _endPage - _startPage,
       (index) => _startPage + index,
@@ -109,7 +113,8 @@ class PlutoPaginationState extends _PlutoPaginationStateWithChange {
 
   void _beforePage() {
     setState(() {
-      page -= 1 + (_itemSize * 2);
+      // page -= 1 + (_itemSize * 2);
+      page -= 1;
 
       if (page < 1) {
         page = 1;
@@ -121,7 +126,8 @@ class PlutoPaginationState extends _PlutoPaginationStateWithChange {
 
   void _nextPage() {
     setState(() {
-      page += 1 + (_itemSize * 2);
+      // page += 1 + (_itemSize * 2);
+      page += 1;
 
       if (page > totalPage) {
         page = totalPage;
