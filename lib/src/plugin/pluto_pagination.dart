@@ -147,8 +147,14 @@ class PlutoPaginationState extends _PlutoPaginationStateWithChange {
 
   ButtonStyle _getNumberButtonStyle(bool isCurrentIndex) {
     return TextButton.styleFrom(
-      primary: Colors.transparent,
-      onSurface: Colors.transparent,
+      minimumSize: const Size(50.0, 50.0),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(50.0),
+      ),
+      foregroundColor: isCurrentIndex
+          ? stateManager.configuration!.style.iconColor
+          : Colors.white,
+      disabledForegroundColor: Colors.transparent.withOpacity(0.38),
       shadowColor: Colors.transparent,
       padding: const EdgeInsets.fromLTRB(5, 0, 0, 10),
       backgroundColor: Colors.transparent,
@@ -159,8 +165,11 @@ class PlutoPaginationState extends _PlutoPaginationStateWithChange {
     return TextStyle(
       fontSize:
           isCurrentIndex ? stateManager.configuration!.style.iconSize : null,
+      // color: isCurrentIndex
+      //     ? stateManager.configuration!.style.activatedBorderColor
+      //     : stateManager.configuration!.style.iconColor,
       color: isCurrentIndex
-          ? stateManager.configuration!.style.activatedBorderColor
+          ? Colors.white
           : stateManager.configuration!.style.iconColor,
     );
   }
@@ -170,19 +179,14 @@ class PlutoPaginationState extends _PlutoPaginationStateWithChange {
 
     var isCurrentIndex = page == pageFromIndex;
 
-    return Container(
-      width: 50.0,
-      height: 50.0,
-      decoration: BoxDecoration(borderRadius: BorderRadius.circular(50.0)),
-      child: TextButton(
-        onPressed: () {
-          stateManager.setPage(pageFromIndex);
-        },
-        style: _getNumberButtonStyle(isCurrentIndex),
-        child: Text(
-          pageFromIndex.toString(),
-          style: _getNumberTextStyle(isCurrentIndex),
-        ),
+    return TextButton(
+      onPressed: () {
+        stateManager.setPage(pageFromIndex);
+      },
+      style: _getNumberButtonStyle(isCurrentIndex),
+      child: Text(
+        pageFromIndex.toString(),
+        style: _getNumberTextStyle(isCurrentIndex),
       ),
     );
   }
