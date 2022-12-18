@@ -95,6 +95,8 @@ class PlutoPaginationState extends _PlutoPaginationStateWithChange {
   }
 
   List<int> get _pageNumbers {
+    print("_endPage: $_endPage");
+    print("_startPage: $_startPage");
     return List.generate(
       _endPage - _startPage,
       (index) => _startPage + index,
@@ -162,14 +164,19 @@ class PlutoPaginationState extends _PlutoPaginationStateWithChange {
 
     var isCurrentIndex = page == pageFromIndex;
 
-    return TextButton(
-      onPressed: () {
-        stateManager.setPage(pageFromIndex);
-      },
-      style: _getNumberButtonStyle(isCurrentIndex),
-      child: Text(
-        pageFromIndex.toString(),
-        style: _getNumberTextStyle(isCurrentIndex),
+    return Container(
+      width: 50.0,
+      height: 50.0,
+      decoration: BoxDecoration(borderRadius: BorderRadius.circular(50.0)),
+      child: TextButton(
+        onPressed: () {
+          stateManager.setPage(pageFromIndex);
+        },
+        style: _getNumberButtonStyle(isCurrentIndex),
+        child: Text(
+          pageFromIndex.toString(),
+          style: _getNumberTextStyle(isCurrentIndex),
+        ),
       ),
     );
   }
@@ -213,12 +220,18 @@ class PlutoPaginationState extends _PlutoPaginationStateWithChange {
                     : SystemMouseCursors.click,
               ),
               Expanded(
-                child: SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: Row(
-                    children: [
-                      ..._pageNumbers.map(_makeNumberButton).toList(),
-                    ],
+                child: Scrollbar(
+                  thumbVisibility: true,
+                  thickness: 10,
+                  radius: const Radius.circular(20),
+                  scrollbarOrientation: ScrollbarOrientation.bottom,
+                  child: SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children: [
+                        ..._pageNumbers.map(_makeNumberButton).toList(),
+                      ],
+                    ),
                   ),
                 ),
               ),
