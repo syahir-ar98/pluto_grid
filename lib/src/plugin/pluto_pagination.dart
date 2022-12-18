@@ -156,18 +156,9 @@ class PlutoPaginationState extends _PlutoPaginationStateWithChange {
           : Colors.transparent,
       disabledForegroundColor: Colors.transparent.withOpacity(0.38),
       shadowColor: Colors.transparent,
-      // padding: const EdgeInsets.fromLTRB(5, 0, 0, 10),
       backgroundColor: isCurrentIndex
           ? stateManager.configuration!.style.iconColor
           : Colors.transparent,
-      // backgroundColor:
-      //     MaterialStateProperty.resolveWith<Color>((Set<MaterialState> states) {
-      //   if (states.contains(MaterialState.hovered)) {
-      //     return Colors.red;
-      //   } else {
-      //     return Colors.white;
-      //   }
-      // }),
     );
   }
 
@@ -175,9 +166,6 @@ class PlutoPaginationState extends _PlutoPaginationStateWithChange {
     return TextStyle(
       fontSize:
           isCurrentIndex ? stateManager.configuration!.style.iconSize : null,
-      // color: isCurrentIndex
-      //     ? stateManager.configuration!.style.activatedBorderColor
-      //     : stateManager.configuration!.style.iconColor,
       color: isCurrentIndex
           ? Colors.white
           : stateManager.configuration!.style.iconColor.withOpacity(0.90),
@@ -189,14 +177,17 @@ class PlutoPaginationState extends _PlutoPaginationStateWithChange {
 
     var isCurrentIndex = page == pageFromIndex;
 
-    return TextButton(
-      onPressed: () {
-        stateManager.setPage(pageFromIndex);
-      },
-      style: _getNumberButtonStyle(isCurrentIndex),
-      child: Text(
-        pageFromIndex.toString(),
-        style: _getNumberTextStyle(isCurrentIndex),
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(0.0, 5.0, 0.0, 5.0),
+      child: TextButton(
+        onPressed: () {
+          stateManager.setPage(pageFromIndex);
+        },
+        style: _getNumberButtonStyle(isCurrentIndex),
+        child: Text(
+          pageFromIndex.toString(),
+          style: _getNumberTextStyle(isCurrentIndex),
+        ),
       ),
     );
   }
