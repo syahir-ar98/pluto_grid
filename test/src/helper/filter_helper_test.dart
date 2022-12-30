@@ -1,18 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 import 'package:pluto_grid/pluto_grid.dart';
 
 import '../../helper/column_helper.dart';
 import '../../helper/row_helper.dart';
+import '../../matcher/pluto_object_matcher.dart';
 import '../../mock/mock_build_context.dart';
-import '../../mock/mock_on_change_listener.dart';
-import 'filter_helper_test.mocks.dart';
+import '../../mock/mock_methods.dart';
+import '../../mock/shared_mocks.mocks.dart';
 
-@GenerateMocks([], customMocks: [
-  MockSpec<PlutoGridStateManager>(returnNullOnMissingStub: true),
-])
 void main() {
   group('createFilterRow', () {
     test(
@@ -234,6 +231,143 @@ void main() {
     });
   });
 
+  group('convertRowsToMap', () {
+    test('filterRows 가 비어있으면 빈 맵을 리턴해야 한다.', () {
+      final List<PlutoRow> filterRows = [];
+
+      final result = FilterHelper.convertRowsToMap(filterRows);
+
+      expect(result.isEmpty, true);
+      expect(result, isA<Map<String, List<Map<String, String>>>>());
+    });
+
+    test('filterRows 가 설정 되어 있으면 Map 에 값이 설정되어 리턴되어야 한다.', () {
+      final List<PlutoRow> filterRows = [
+        PlutoRow(cells: {
+          FilterHelper.filterFieldColumn: PlutoCell(value: 'column'),
+          FilterHelper.filterFieldType: PlutoCell(
+            value: const PlutoFilterTypeContains(),
+          ),
+          FilterHelper.filterFieldValue: PlutoCell(value: '123'),
+        }),
+      ];
+
+      final result = FilterHelper.convertRowsToMap(filterRows);
+
+      expect(result.length, 1);
+      expect(result, PlutoObjectMatcher<Map<String, List<Map<String, String>>>>(
+        rule: (value) {
+          return value.keys.first == 'column' &&
+              value.values.first[0].keys.first ==
+                  PlutoFilterTypeContains.name &&
+              value.values.first[0].values.first == '123';
+        },
+      ));
+    });
+
+    test(
+        'filterRows 에 동일한 컬럼의 조건이 2개 설정 되어 있으면, '
+        'Map 에 값이 설정되어 리턴되어야 한다.', () {
+      final List<PlutoRow> filterRows = [
+        PlutoRow(cells: {
+          FilterHelper.filterFieldColumn: PlutoCell(value: 'column'),
+          FilterHelper.filterFieldType: PlutoCell(
+            value: const PlutoFilterTypeContains(),
+          ),
+          FilterHelper.filterFieldValue: PlutoCell(value: '123'),
+        }),
+        PlutoRow(cells: {
+          FilterHelper.filterFieldColumn: PlutoCell(value: 'column'),
+          FilterHelper.filterFieldType: PlutoCell(
+            value: const PlutoFilterTypeEndsWith(),
+          ),
+          FilterHelper.filterFieldValue: PlutoCell(value: '456'),
+        }),
+      ];
+
+      final result = FilterHelper.convertRowsToMap(filterRows);
+
+      expect(result.length, 1);
+      expect(result, PlutoObjectMatcher<Map<String, List<Map<String, String>>>>(
+        rule: (value) {
+          return value.keys.contains('column') &&
+              value['column']!.length == 2 &&
+              value['column']![0].keys.contains(PlutoFilterTypeContains.name) &&
+              value['column']![0].values.contains('123') &&
+              value['column']![1].keys.contains(PlutoFilterTypeEndsWith.name) &&
+              value['column']![1].values.contains('456');
+        },
+      ));
+    });
+
+    test(
+        'filtering 조건에 모든 컬럼 조건이 포함 되어 있으면, '
+        'Map 에 기본값 all 로 설정되어 리턴되어야 한다.', () {
+      final List<PlutoRow> filterRows = [
+        PlutoRow(cells: {
+          FilterHelper.filterFieldColumn: PlutoCell(value: 'column'),
+          FilterHelper.filterFieldType: PlutoCell(
+            value: const PlutoFilterTypeContains(),
+          ),
+          FilterHelper.filterFieldValue: PlutoCell(value: '123'),
+        }),
+        PlutoRow(cells: {
+          FilterHelper.filterFieldColumn: PlutoCell(
+            value: FilterHelper.filterFieldAllColumns,
+          ),
+          FilterHelper.filterFieldType: PlutoCell(
+            value: const PlutoFilterTypeContains(),
+          ),
+          FilterHelper.filterFieldValue: PlutoCell(value: '123'),
+        }),
+      ];
+
+      final result = FilterHelper.convertRowsToMap(filterRows);
+
+      expect(result.length, 2);
+      expect(result, PlutoObjectMatcher<Map<String, List<Map<String, String>>>>(
+        rule: (value) {
+          return value.containsKey('all');
+        },
+      ));
+    });
+
+    test(
+        'allField 을 allColumns 로 변경하면, '
+        'Map 에 기본값 allColumns 로 설정되어 리턴되어야 한다.', () {
+      final List<PlutoRow> filterRows = [
+        PlutoRow(cells: {
+          FilterHelper.filterFieldColumn: PlutoCell(value: 'column'),
+          FilterHelper.filterFieldType: PlutoCell(
+            value: const PlutoFilterTypeContains(),
+          ),
+          FilterHelper.filterFieldValue: PlutoCell(value: '123'),
+        }),
+        PlutoRow(cells: {
+          FilterHelper.filterFieldColumn: PlutoCell(
+            value: FilterHelper.filterFieldAllColumns,
+          ),
+          FilterHelper.filterFieldType: PlutoCell(
+            value: const PlutoFilterTypeContains(),
+          ),
+          FilterHelper.filterFieldValue: PlutoCell(value: '123'),
+        }),
+      ];
+
+      final result = FilterHelper.convertRowsToMap(
+        filterRows,
+        allField: 'allColumns',
+      );
+
+      expect(result.length, 2);
+      expect(result, PlutoObjectMatcher<Map<String, List<Map<String, String>>>>(
+        rule: (value) {
+          return value.containsKey('allColumns');
+        },
+      ));
+    });
+  });
+
   group('isFilteredColumn', () {
     test(
       'filterRows : null, empty, '
@@ -342,7 +476,7 @@ void main() {
             filterType: filterType,
             base: a.toString(),
             search: b.toString(),
-            column: column,
+            column: column!,
           );
         };
       };
@@ -595,21 +729,30 @@ void main() {
     });
 
     test('onChanged', () {
-      var mock = MockOnChangeListener();
+      final columns = ColumnHelper.textColumn('column');
+
+      final rows = RowHelper.count(1, columns);
+
+      var mock = MockMethods();
 
       var filterPopupState = FilterPopupState(
         context: MockBuildContext(),
         configuration: const PlutoGridConfiguration(),
         handleAddNewFilter: (_) {},
-        handleApplyFilter: mock.onChangeOneParamListener,
-        columns: ColumnHelper.textColumn('column'),
+        handleApplyFilter: mock.oneParamReturnVoid,
+        columns: columns,
         filterRows: [],
         focusFirstFilterValue: true,
       );
 
-      filterPopupState.onChanged(PlutoGridOnChangedEvent());
+      filterPopupState.onChanged(PlutoGridOnChangedEvent(
+        columnIdx: 0,
+        column: columns.first,
+        rowIdx: 0,
+        row: rows.first,
+      ));
 
-      verify(mock.onChangeOneParamListener(any)).called(1);
+      verify(mock.oneParamReturnVoid(any)).called(1);
     });
 
     test('onSelected', () {
@@ -633,7 +776,7 @@ void main() {
         PlutoGridOnLoadedEvent(stateManager: stateManager),
       );
 
-      filterPopupState.onSelected(PlutoGridOnSelectedEvent());
+      filterPopupState.onSelected(const PlutoGridOnSelectedEvent());
 
       verify(
         stateManager.removeListener(filterPopupState.stateListener),
@@ -642,7 +785,7 @@ void main() {
 
     group('stateListener', () {
       test('filterRows 가 변경되지 않았으면 handleApplyFilter 가 호출되지 않아야 한다.', () {
-        var mock = MockOnChangeListener();
+        var mock = MockMethods();
 
         var columns = ColumnHelper.textColumn('column');
 
@@ -652,7 +795,7 @@ void main() {
           context: MockBuildContext(),
           configuration: const PlutoGridConfiguration(),
           handleAddNewFilter: (_) {},
-          handleApplyFilter: mock.onChangeOneParamListener,
+          handleApplyFilter: mock.oneParamReturnVoid,
           columns: columns,
           filterRows: filterRows,
           focusFirstFilterValue: false,
@@ -668,11 +811,11 @@ void main() {
 
         filterPopupState.stateListener();
 
-        verifyNever(mock.onChangeOneParamListener(stateManager));
+        verifyNever(mock.oneParamReturnVoid(stateManager));
       });
 
       test('filterRows 가 변경 되었으면 handleApplyFilter 가 호출 되어야 한다.', () {
-        var mock = MockOnChangeListener();
+        var mock = MockMethods();
 
         var columns = ColumnHelper.textColumn('column');
 
@@ -680,7 +823,7 @@ void main() {
           context: MockBuildContext(),
           configuration: const PlutoGridConfiguration(),
           handleAddNewFilter: (_) {},
-          handleApplyFilter: mock.onChangeOneParamListener,
+          handleApplyFilter: mock.oneParamReturnVoid,
           columns: columns,
           filterRows: [],
           focusFirstFilterValue: false,
@@ -696,7 +839,7 @@ void main() {
 
         filterPopupState.stateListener();
 
-        verify(mock.onChangeOneParamListener(stateManager)).called(1);
+        verify(mock.oneParamReturnVoid(stateManager)).called(1);
       });
     });
 
@@ -788,14 +931,14 @@ void main() {
       (tester) async {
         final stateManager = MockPlutoGridStateManager();
         const configuration = PlutoGridConfiguration();
-        final mockListener = MockOnChangeListener();
+        final mockListener = MockMethods();
 
         await tester.pumpWidget(MaterialApp(
           home: Material(
             child: PlutoGridFilterPopupHeader(
               stateManager: stateManager,
               configuration: configuration,
-              handleAddNewFilter: mockListener.onChangeOneParamListener,
+              handleAddNewFilter: mockListener.oneParamReturnVoid,
             ),
           ),
         ));
@@ -809,7 +952,7 @@ void main() {
           Icons.add,
         );
 
-        verify(mockListener.onChangeOneParamListener(any)).called(1);
+        verify(mockListener.oneParamReturnVoid(any)).called(1);
       },
     );
 
@@ -818,7 +961,7 @@ void main() {
       (tester) async {
         final stateManager = MockPlutoGridStateManager();
         const configuration = PlutoGridConfiguration();
-        final mockListener = MockOnChangeListener();
+        final mockListener = MockMethods();
 
         when(stateManager.currentSelectingRows).thenReturn([]);
 
@@ -827,7 +970,7 @@ void main() {
             child: PlutoGridFilterPopupHeader(
               stateManager: stateManager,
               configuration: configuration,
-              handleAddNewFilter: mockListener.onChangeOneParamListener,
+              handleAddNewFilter: mockListener.oneParamReturnVoid,
             ),
           ),
         ));
@@ -850,7 +993,7 @@ void main() {
       (tester) async {
         final stateManager = MockPlutoGridStateManager();
         const configuration = PlutoGridConfiguration();
-        final mockListener = MockOnChangeListener();
+        final mockListener = MockMethods();
 
         final dummyRow = PlutoRow(cells: {'test': PlutoCell(value: '')});
 
@@ -861,7 +1004,7 @@ void main() {
             child: PlutoGridFilterPopupHeader(
               stateManager: stateManager,
               configuration: configuration,
-              handleAddNewFilter: mockListener.onChangeOneParamListener,
+              handleAddNewFilter: mockListener.oneParamReturnVoid,
             ),
           ),
         ));

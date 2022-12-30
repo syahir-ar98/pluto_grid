@@ -2,11 +2,15 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mockito/mockito.dart';
 import 'package:pluto_grid/pluto_grid.dart';
+import 'package:pluto_grid/src/ui/ui.dart';
 
 import '../helper/column_helper.dart';
 import '../helper/row_helper.dart';
 import '../helper/test_helper_util.dart';
+import '../matcher/pluto_object_matcher.dart';
+import '../mock/mock_methods.dart';
 
 void main() {
   const buttonText = 'open grid popup';
@@ -15,7 +19,7 @@ void main() {
 
   late PlutoGridStateManager stateManager;
 
-  Future<void> _build({
+  Future<void> build({
     required WidgetTester tester,
     List<PlutoColumn> columns = const [],
     List<PlutoRow> rows = const [],
@@ -27,12 +31,14 @@ void main() {
     PlutoOnRowDoubleTapEventCallback? onRowDoubleTap,
     PlutoOnRowSecondaryTapEventCallback? onRowSecondaryTap,
     PlutoOnRowsMovedEventCallback? onRowsMoved,
+    PlutoOnColumnsMovedEventCallback? onColumnsMoved,
     CreateHeaderCallBack? createHeader,
     CreateFooterCallBack? createFooter,
+    Widget? noRowsWidget,
     PlutoRowColorCallback? rowColorCallback,
     PlutoColumnMenuDelegate? columnMenuDelegate,
-    PlutoGridConfiguration? configuration,
-    PlutoGridMode? mode,
+    PlutoGridConfiguration configuration = const PlutoGridConfiguration(),
+    PlutoGridMode mode = PlutoGridMode.normal,
     TextDirection textDirection = TextDirection.ltr,
   }) async {
     await TestHelperUtil.changeWidth(
@@ -63,8 +69,10 @@ void main() {
                       onRowDoubleTap: onRowDoubleTap,
                       onRowSecondaryTap: onRowSecondaryTap,
                       onRowsMoved: onRowsMoved,
+                      onColumnsMoved: onColumnsMoved,
                       createHeader: createHeader,
                       createFooter: createFooter,
+                      noRowsWidget: noRowsWidget,
                       rowColorCallback: rowColorCallback,
                       columnMenuDelegate: columnMenuDelegate,
                       configuration: configuration,
@@ -87,7 +95,7 @@ void main() {
     final columns = ColumnHelper.textColumn('title', count: 10);
     final rows = RowHelper.count(10, columns);
 
-    await _build(
+    await build(
       tester: tester,
       columns: columns,
       rows: rows,
@@ -108,7 +116,7 @@ void main() {
     final columns = ColumnHelper.textColumn('title', count: 10);
     final rows = RowHelper.count(10, columns);
 
-    await _build(
+    await build(
       tester: tester,
       columns: columns,
       rows: rows,
@@ -129,7 +137,7 @@ void main() {
       final columns = ColumnHelper.textColumn('title', count: 10);
       final rows = RowHelper.count(10, columns);
 
-      await _build(
+      await build(
         tester: tester,
         columns: columns,
         rows: rows,
@@ -149,7 +157,7 @@ void main() {
       stateManager.moveScrollByColumn(PlutoMoveDirection.right, 8);
       await tester.pumpAndSettle();
 
-      final scrollOffset = stateManager.scroll!.horizontal!.offset;
+      final scrollOffset = stateManager.scroll.horizontal!.offset;
 
       final lastColumn = find.text('title9');
       final lastStartPosition = tester.getTopRight(lastColumn);
@@ -171,7 +179,7 @@ void main() {
       final columns = ColumnHelper.textColumn('title', count: 10);
       final rows = RowHelper.count(10, columns);
 
-      await _build(
+      await build(
         tester: tester,
         columns: columns,
         rows: rows,
@@ -191,7 +199,7 @@ void main() {
       stateManager.moveScrollByColumn(PlutoMoveDirection.right, 8);
       await tester.pumpAndSettle();
 
-      final scrollOffset = stateManager.scroll!.horizontal!.offset;
+      final scrollOffset = stateManager.scroll.horizontal!.offset;
 
       final lastCell = find.text('title9 value 0');
       final lastStartPosition = tester.getTopRight(lastCell);
@@ -213,7 +221,7 @@ void main() {
 
     PlutoGridOnChangedEvent? event;
 
-    await _build(
+    await build(
       tester: tester,
       columns: columns,
       rows: rows,
@@ -246,7 +254,7 @@ void main() {
 
     PlutoGridOnSelectedEvent? event;
 
-    await _build(
+    await build(
       tester: tester,
       columns: columns,
       rows: rows,
@@ -275,7 +283,7 @@ void main() {
 
     PlutoGridOnSelectedEvent? event;
 
-    await _build(
+    await build(
       tester: tester,
       columns: columns,
       rows: rows,
@@ -301,7 +309,7 @@ void main() {
 
     PlutoGridOnSortedEvent? event;
 
-    await _build(
+    await build(
       tester: tester,
       columns: columns,
       rows: rows,
@@ -347,7 +355,7 @@ void main() {
 
     PlutoGridOnRowCheckedEvent? event;
 
-    await _build(
+    await build(
       tester: tester,
       columns: columns,
       rows: rows,
@@ -378,7 +386,7 @@ void main() {
 
     PlutoGridOnRowDoubleTapEvent? event;
 
-    await _build(
+    await build(
       tester: tester,
       columns: columns,
       rows: rows,
@@ -396,7 +404,7 @@ void main() {
 
     expect(event, isNotNull);
     expect(event!.rowIdx, 2);
-    expect(event!.cell!.value, 'title2 value 2');
+    expect(event!.cell.value, 'title2 value 2');
   });
 
   testWidgets('Secondary 버튼을 탭하면 onRowSecondaryTap 콜백이 호출 되어야 한다.',
@@ -406,7 +414,7 @@ void main() {
 
     PlutoGridOnRowSecondaryTapEvent? event;
 
-    await _build(
+    await build(
       tester: tester,
       columns: columns,
       rows: rows,
@@ -422,7 +430,7 @@ void main() {
 
     expect(event, isNotNull);
     expect(event!.rowIdx, 5);
-    expect(event!.cell!.value, 'title3 value 5');
+    expect(event!.cell.value, 'title3 value 5');
   });
 
   testWidgets('행을 드래그 하면 onRowsMoved 콜백이 호출 되어야 한다.', (tester) async {
@@ -433,7 +441,7 @@ void main() {
 
     PlutoGridOnRowsMovedEvent? event;
 
-    await _build(
+    await build(
       tester: tester,
       columns: columns,
       rows: rows,
@@ -454,8 +462,8 @@ void main() {
 
     expect(event, isNotNull);
     expect(event!.idx, 2);
-    expect(event!.rows!.length, 1);
-    expect(event!.rows![0]!.cells['title0']!.value, 'title0 value 0');
+    expect(event!.rows.length, 1);
+    expect(event!.rows[0].cells['title0']!.value, 'title0 value 0');
   });
 
   testWidgets('createHeader 위젯이 렌더링 되어야 한다.', (tester) async {
@@ -464,7 +472,7 @@ void main() {
 
     final headerKey = GlobalKey();
 
-    await _build(
+    await build(
       tester: tester,
       columns: columns,
       rows: rows,
@@ -484,7 +492,7 @@ void main() {
 
     final footerKey = GlobalKey();
 
-    await _build(
+    await build(
       tester: tester,
       columns: columns,
       rows: rows,
@@ -502,7 +510,7 @@ void main() {
     final columns = ColumnHelper.textColumn('title', count: 10);
     final rows = RowHelper.count(10, columns);
 
-    await _build(
+    await build(
       tester: tester,
       columns: columns,
       rows: rows,
@@ -540,7 +548,7 @@ void main() {
     final columns = ColumnHelper.textColumn('title', count: 10);
     final rows = RowHelper.count(10, columns);
 
-    await _build(
+    await build(
       tester: tester,
       columns: columns,
       rows: rows,
@@ -561,6 +569,158 @@ void main() {
 
     expect(find.text('test menu 1'), findsOneWidget);
     expect(find.text('test menu 2'), findsOneWidget);
+  });
+
+  testWidgets('컬럼을 좌측 고정 하면 onColumnsMoved 콜백이 호출 되어야 한다.', (tester) async {
+    final mock = MockMethods();
+    final columns = ColumnHelper.textColumn('column', count: 10);
+    final rows = RowHelper.count(10, columns);
+
+    await build(
+      tester: tester,
+      columns: columns,
+      rows: rows,
+      onColumnsMoved: mock.oneParamReturnVoid<PlutoGridOnColumnsMovedEvent>,
+    );
+
+    await tester.tap(find.text(buttonText));
+    await tester.pumpAndSettle();
+
+    stateManager.toggleFrozenColumn(columns[1], PlutoColumnFrozen.start);
+    await tester.pump();
+
+    verify(mock.oneParamReturnVoid(
+        PlutoObjectMatcher<PlutoGridOnColumnsMovedEvent>(rule: (e) {
+      return e.idx == 1 && e.visualIdx == 0 && e.columns.length == 1;
+    }))).called(1);
+  });
+
+  testWidgets('컬럼을 우측 고정 하면 onColumnsMoved 콜백이 호출 되어야 한다.', (tester) async {
+    final mock = MockMethods();
+    final columns = ColumnHelper.textColumn('column', count: 10);
+    final rows = RowHelper.count(10, columns);
+
+    await build(
+      tester: tester,
+      columns: columns,
+      rows: rows,
+      onColumnsMoved: mock.oneParamReturnVoid<PlutoGridOnColumnsMovedEvent>,
+    );
+
+    await tester.tap(find.text(buttonText));
+    await tester.pumpAndSettle();
+
+    stateManager.toggleFrozenColumn(columns[1], PlutoColumnFrozen.end);
+    await tester.pump();
+
+    verify(mock.oneParamReturnVoid(
+        PlutoObjectMatcher<PlutoGridOnColumnsMovedEvent>(rule: (e) {
+      return e.idx == 1 && e.visualIdx == 9 && e.columns.length == 1;
+    }))).called(1);
+  });
+
+  testWidgets('컬럼을 드래그하여 이동하면 onColumnsMoved 콜백이 호출 되어야 한다.', (tester) async {
+    final mock = MockMethods();
+    final columns = ColumnHelper.textColumn('column', count: 10);
+    final rows = RowHelper.count(10, columns);
+
+    await build(
+      tester: tester,
+      columns: columns,
+      rows: rows,
+      onColumnsMoved: mock.oneParamReturnVoid<PlutoGridOnColumnsMovedEvent>,
+    );
+
+    await tester.tap(find.text(buttonText));
+    await tester.pumpAndSettle();
+
+    final sampleColumn = find.text('column1');
+
+    await tester.drag(sampleColumn, const Offset(400, 0));
+
+    await tester.pumpAndSettle(const Duration(milliseconds: 300));
+
+    verify(mock.oneParamReturnVoid(
+        PlutoObjectMatcher<PlutoGridOnColumnsMovedEvent>(rule: (e) {
+      return e.idx == 3 && e.visualIdx == 3 && e.columns.length == 1;
+    }))).called(1);
+  });
+
+  group('noRowsWidget', () {
+    testWidgets('행이 없는 경우 noRowsWidget 이 렌더링 되어야 한다.', (tester) async {
+      final columns = ColumnHelper.textColumn('column', count: 10);
+      final rows = <PlutoRow>[];
+      const noRowsWidget = Center(
+        key: ValueKey('NoRowsWidget'),
+        child: Text('There are no rows.'),
+      );
+
+      await build(
+        tester: tester,
+        columns: columns,
+        rows: rows,
+        noRowsWidget: noRowsWidget,
+      );
+
+      await tester.tap(find.text(buttonText));
+      await tester.pumpAndSettle();
+
+      expect(find.byKey(noRowsWidget.key!), findsOneWidget);
+    });
+
+    testWidgets('행을 삭제하는 경우 noRowsWidget 이 렌더링 되어야 한다.', (tester) async {
+      final columns = ColumnHelper.textColumn('column', count: 10);
+      final rows = RowHelper.count(10, columns);
+      const noRowsWidget = Center(
+        key: ValueKey('NoRowsWidget'),
+        child: Text('There are no rows.'),
+      );
+
+      await build(
+        tester: tester,
+        columns: columns,
+        rows: rows,
+        noRowsWidget: noRowsWidget,
+      );
+
+      await tester.tap(find.text(buttonText));
+      await tester.pumpAndSettle();
+
+      expect(find.byKey(noRowsWidget.key!), findsNothing);
+
+      stateManager.removeAllRows();
+
+      await tester.pump(const Duration(milliseconds: 350));
+
+      expect(find.byKey(noRowsWidget.key!), findsOneWidget);
+    });
+
+    testWidgets('행을 추가하는 경우 noRowsWidget 이 렌더링 되지 않아야 한다.', (tester) async {
+      final columns = ColumnHelper.textColumn('column', count: 10);
+      final rows = <PlutoRow>[];
+      const noRowsWidget = Center(
+        key: ValueKey('NoRowsWidget'),
+        child: Text('There are no rows.'),
+      );
+
+      await build(
+        tester: tester,
+        columns: columns,
+        rows: rows,
+        noRowsWidget: noRowsWidget,
+      );
+
+      await tester.tap(find.text(buttonText));
+      await tester.pumpAndSettle();
+
+      expect(find.byKey(noRowsWidget.key!), findsOneWidget);
+
+      stateManager.appendNewRows();
+
+      await tester.pumpAndSettle(const Duration(milliseconds: 350));
+
+      expect(find.byKey(noRowsWidget.key!), findsNothing);
+    });
   });
 }
 

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pluto_grid/pluto_grid.dart';
+import 'package:pluto_grid/src/ui/ui.dart';
 
 import '../../helper/column_helper.dart';
 import '../../helper/row_helper.dart';
@@ -10,7 +11,7 @@ void main() {
   Widget buildGrid({
     required List<PlutoColumn> columns,
     required List<PlutoRow> rows,
-    PlutoGridConfiguration? configuration,
+    PlutoGridConfiguration configuration = const PlutoGridConfiguration(),
   }) {
     return MaterialApp(
       home: Material(

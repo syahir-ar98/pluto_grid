@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pluto_grid/pluto_grid.dart';
+import 'package:pluto_grid/src/ui/ui.dart';
 
 import '../../helper/column_helper.dart';
 import '../../helper/pluto_widget_test_helper.dart';
@@ -75,10 +76,10 @@ void main() {
 
         pageButtons = find.byType(TextButton);
 
-        defaultButtonColor = stateManager.configuration!.style.iconColor;
+        defaultButtonColor = stateManager.configuration.style.iconColor;
 
         activateButtonColor =
-            stateManager.configuration!.style.activatedBorderColor;
+            stateManager.configuration.style.activatedBorderColor;
       },
     );
 

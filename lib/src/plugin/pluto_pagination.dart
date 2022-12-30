@@ -3,13 +3,28 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:pluto_grid/pluto_grid.dart';
 
+import '../ui/ui.dart';
+
+/// A widget for client-side pagination.
+///
+/// Server-side pagination can be implemented
+/// using the [PlutoLazyPagination] or [PlutoInfinityScrollRows] widgets.
 class PlutoPagination extends PlutoStatefulWidget {
   const PlutoPagination(
     this.stateManager, {
+    this.pageSizeToMove,
     super.key,
-  });
+  }) : assert(pageSizeToMove == null || pageSizeToMove > 0);
 
   final PlutoGridStateManager stateManager;
+
+  /// Set the number of moves to the previous or next page button.
+  ///
+  /// Default is null.
+  /// Moves the page as many as the number of page buttons currently displayed.
+  ///
+  /// If this value is set to 1, the next previous page is moved by one page.
+  final int? pageSizeToMove;
 
   @override
   PlutoPaginationState createState() => PlutoPaginationState();
@@ -34,11 +49,11 @@ abstract class _PlutoPaginationStateWithChange
 
     stateManager.setPage(page, notify: false);
 
-    updateState();
+    updateState(PlutoNotifierEventForceUpdate.instance);
   }
 
   @override
-  void updateState() {
+  void updateState(PlutoNotifierEvent event) {
     page = update<int>(
       page,
       stateManager.page,
@@ -104,7 +119,16 @@ class PlutoPaginationState extends _PlutoPaginationStateWithChange {
     return List.generate(
       _endPage - _startPage,
       (index) => _startPage + index,
+      growable: false,
     );
+  }
+
+  int get _pageSizeToMove {
+    if (widget.pageSizeToMove == null) {
+      return 1 + (_itemSize * 2);
+    }
+
+    return widget.pageSizeToMove!;
   }
 
   void _firstPage() {
@@ -165,7 +189,7 @@ class PlutoPaginationState extends _PlutoPaginationStateWithChange {
   TextStyle _getNumberTextStyle(bool isCurrentIndex) {
     return TextStyle(
       fontSize:
-          isCurrentIndex ? stateManager.configuration!.style.iconSize : null,
+          isCurrentIndex ? stateManager.configuration.style.iconSize : null,
       color: isCurrentIndex
           ? Colors.white
           : stateManager.configuration!.style.iconColor.withOpacity(0.90),
@@ -198,15 +222,14 @@ class PlutoPaginationState extends _PlutoPaginationStateWithChange {
       builder: (_, size) {
         _maxWidth = size.maxWidth;
 
-        final Color iconColor = stateManager.configuration!.style.iconColor;
+        final Color iconColor = stateManager.configuration.style.iconColor;
 
         final Color disabledIconColor =
-            stateManager.configuration!.style.disabledIconColor;
+            stateManager.configuration.style.disabledIconColor;
 
-        return Container(
+        return SizedBox(
           width: _maxWidth,
           height: stateManager.footerHeight,
-          alignment: Alignment.center,
           child: Row(
             children: [
               const SizedBox(width: 50),
