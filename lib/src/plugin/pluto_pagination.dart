@@ -255,6 +255,7 @@ class PlutoPaginationState extends _PlutoPaginationStateWithChange {
               ),
               Expanded(
                 child: Scrollbar(
+                  controller: ScrollController(),
                   thumbVisibility: true,
                   thickness: 10,
                   radius: const Radius.circular(20),
