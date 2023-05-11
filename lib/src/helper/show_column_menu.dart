@@ -82,8 +82,8 @@ Future<T?>? showColumnMenu<T>({
   Color backgroundColor = Colors.white,
 }) {
   final RenderBox overlay =
-      Overlay.of(context)!.context.findRenderObject() as RenderBox;
-  
+      Overlay.of(context).context.findRenderObject() as RenderBox;
+
   final Offset offset = overlay.localToGlobal(Offset.zero);
 
   return showMenu<T>(
