@@ -176,12 +176,12 @@ class PlutoPaginationState extends _PlutoPaginationStateWithChange {
         borderRadius: BorderRadius.circular(50.0),
       ),
       foregroundColor: isCurrentIndex
-          ? stateManager.configuration!.style.iconColor
+          ? stateManager.configuration.style.iconColor
           : Colors.transparent,
       disabledForegroundColor: Colors.transparent.withOpacity(0.38),
       shadowColor: Colors.transparent,
       backgroundColor: isCurrentIndex
-          ? stateManager.configuration!.style.iconColor
+          ? stateManager.configuration.style.iconColor
           : Colors.transparent,
     );
   }
@@ -192,7 +192,7 @@ class PlutoPaginationState extends _PlutoPaginationStateWithChange {
           isCurrentIndex ? stateManager.configuration.style.iconSize : null,
       color: isCurrentIndex
           ? Colors.white
-          : stateManager.configuration!.style.iconColor.withOpacity(0.90),
+          : stateManager.configuration.style.iconColor.withOpacity(0.90),
     );
   }
 
